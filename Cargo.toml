@@ -7,3 +7,4 @@ edition = "2021"
 
 [dependencies]
 iced = "0.10"
+iced_aw = { version = "0.7.0", default-features = false,features = ["tab_bar", "tabs"] }
