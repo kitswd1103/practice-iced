@@ -1,7 +1,10 @@
+pub mod tabs;
+use crate::tabs::PracticeTabBar;
+
 use iced::{Application, executor, Theme, Command, Settings, Element};
 
 fn main() -> iced::Result {
-    PracticeApp::run(Settings::default())
+    PracticeTabBar::run(Settings::default())
 }
 
 struct PracticeApp;
@@ -26,5 +29,9 @@ impl Application for PracticeApp {
 
     fn view(&self) -> Element<Self::Message> {
         "Practice app".into()
+    }
+
+    fn theme(&self) -> Self::Theme {
+        Theme::Dark
     }
 }
