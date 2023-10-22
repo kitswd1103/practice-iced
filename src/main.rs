@@ -1,6 +1,6 @@
 use iced::{
     alignment, executor,
-    widget::{button, scrollable, scrollable::Properties, Row, Text},
+    widget::{button, scrollable, scrollable::Properties, Row, Text, Button},
     Application, Command, Element, Length, Settings, Theme,
 };
 
@@ -52,34 +52,28 @@ impl Application for PracticeApp {
     }
 
     fn view(&self) -> Element<Self::Message> {
-        Row::new().push(button("+").on_press(ScrollableTabBarMessage::NewTab)).push(
+        Self::tab_bar(&self.tab_labels, true)
+            .into()
+    }
+
+    fn theme(&self) -> Self::Theme {
+        Theme::Dark
+    }
+}
+
+impl<'a> PracticeApp {
+    fn tab_bar(labels: &'a Vec<String>, view_add_button: bool) -> Row<'a, ScrollableTabBarMessage> {
+        let mut tab_bar = Row::new();
+        if view_add_button {
+            tab_bar = tab_bar.push(button("+").on_press(ScrollableTabBarMessage::NewTab));
+        }
+        tab_bar.push(
             scrollable(
-                self.tab_labels
+                labels
                     .iter()
                     .enumerate()
                     .fold(Row::new(), |row, (index, label)| {
-                        row.push(button(
-                            Row::new()
-                                .push(
-                                    Text::new(label.as_str())
-                                        .size(16.0)
-                                        .vertical_alignment(alignment::Vertical::Center)
-                                        .width(Length::Shrink),
-                                )
-                                .push(
-                                    button(
-                                        Text::new("X")
-                                            .size(8.0)
-                                            .vertical_alignment(alignment::Vertical::Center)
-                                            .horizontal_alignment(alignment::Horizontal::Center),
-                                    )
-                                    .width(Length::Shrink)
-                                    .height(Length::Shrink)
-                                    .on_press(ScrollableTabBarMessage::TabClosed(index)),
-                                )
-                                .spacing(10),
-                        ).on_press(ScrollableTabBarMessage::TabSelected(index))
-                    )
+                        row.push(Self::tab(label, index))
                     })
                     .width(Length::Shrink)
                     .padding([0.0, 0.0, 2.0, 0.0]),
@@ -88,10 +82,28 @@ impl Application for PracticeApp {
                 Properties::new().width(2).scroller_width(2),
             ))
         )
-        .into()
-    }
-
-    fn theme(&self) -> Self::Theme {
-        Theme::Dark
+    } 
+    fn tab(label: & 'a String, index: usize) -> Button<'a, ScrollableTabBarMessage> {
+        Button::new(
+            Row::new()
+                .push(
+                    Text::new(label)
+                        .size(16.0)
+                        .vertical_alignment(alignment::Vertical::Center)
+                        .width(Length::Shrink),
+                )
+                .push(
+                    button(
+                        Text::new("X")
+                            .size(8.0)
+                            .vertical_alignment(alignment::Vertical::Center)
+                            .horizontal_alignment(alignment::Horizontal::Center),
+                    )
+                    .width(Length::Shrink)
+                    .height(Length::Shrink)
+                    .on_press(ScrollableTabBarMessage::TabClosed(index)),
+                )
+                .spacing(10),
+        ).on_press(ScrollableTabBarMessage::TabSelected(index))
     }
 }
