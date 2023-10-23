@@ -15,19 +15,20 @@ struct PracticeApp {
 
 #[derive(Default)]
 struct TabBar {
-    tabs: Vec<Tab>,
+    tabs: Vec<TabLabel>,
     active_tab_id: Option<usize>,
     next_id: usize,
 }
 
-struct Tab {
+struct TabLabel {
     id: usize,
     label: String,
 }
 
 impl TabBar {
+    const SCROLLER_WIDTH: f32 = 3.0;
     fn add_default_tab(&mut self) {
-        self.tabs.push(Tab { id: self.next_id
+        self.tabs.push(TabLabel { id: self.next_id
             , ..Default::default()
         });
         self.next_id = self.next_id + 1;
@@ -104,7 +105,7 @@ mod tests {
     }
 }
 
-impl Default for Tab {
+impl Default for TabLabel {
     fn default() -> Self {
         Self {id: 0, label: "New tab".to_owned()}
     }
@@ -173,16 +174,16 @@ impl<'a> TabBar {
                             row.push(tab.view())
                         })
                         .width(Length::Shrink)
-                        .padding([0.0, 0.0, 2.0, 0.0]),
+                        .padding([0.0, 0.0, Self::SCROLLER_WIDTH, 0.0]),
                 )
                 .direction(scrollable::Direction::Horizontal(
-                    Properties::new().width(2).scroller_width(2),
+                    Properties::new().width(Self::SCROLLER_WIDTH).scroller_width(Self::SCROLLER_WIDTH),
                 ))
         )
     }
 }
 
-impl<'a> Tab {
+impl<'a> TabLabel {
     fn view(&self) -> Button<'a, ScrollableTabBarMessage> {
         Button::new(
             Row::new()
