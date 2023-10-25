@@ -1,5 +1,5 @@
 use iced::{executor, Application, Command, Element, Settings, Theme};
-use tabs::{ScrollableTabBarMessage, TabBar};
+use tabs::{ScrollableTabBarMessage, Tabs};
 
 mod tabs;
 
@@ -9,7 +9,7 @@ fn main() -> iced::Result {
 
 #[derive(Default)]
 struct PracticeApp {
-    tab_bar: TabBar,
+    tabs: Tabs,
 }
 
 impl Application for PracticeApp {
@@ -32,11 +32,11 @@ impl Application for PracticeApp {
     }
 
     fn update(&mut self, message: Self::Message) -> Command<Self::Message> {
-        self.tab_bar.update(message)
+        self.tabs.update(message)
     }
 
     fn view(&self) -> Element<Self::Message> {
-        self.tab_bar.view().into()
+        self.tabs.view().into()
     }
 
     fn theme(&self) -> Self::Theme {
