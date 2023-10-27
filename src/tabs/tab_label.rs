@@ -1,7 +1,7 @@
 use iced::{
     alignment, theme,
     widget::{button, Button, Row, Text},
-    Background, Color, Length, Renderer, Theme,
+    Background, Color, Element, Length, Renderer, Theme,
 };
 
 use super::ScrollableTabBarMessage;
@@ -13,13 +13,14 @@ pub struct TabLabel {
 }
 
 impl TabLabel {
-    pub fn new(id: usize) -> Self {
+    pub fn new(id: usize, label: String) -> Self {
         Self {
             id,
-            label: "New tab".to_owned(),
+            label,
             active: false,
         }
     }
+
     pub fn id(&self) -> usize {
         self.id
     }
@@ -39,7 +40,7 @@ impl Default for TabLabel {
 }
 
 impl<'a> TabLabel {
-    pub fn view(&self) -> Button<'a, ScrollableTabBarMessage, Renderer> {
+    pub fn view(&self) -> Element<'a, ScrollableTabBarMessage, Renderer> {
         Button::new(
             Row::new()
                 .push(
@@ -63,6 +64,7 @@ impl<'a> TabLabel {
         )
         .style(theme::Button::custom(TabLabelStyle::new(self.active)))
         .on_press(ScrollableTabBarMessage::TabSelected(self.id))
+        .into()
     }
 }
 
