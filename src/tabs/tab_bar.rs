@@ -1,6 +1,6 @@
 use iced::{
     widget::{button, scrollable, scrollable::Properties, Row},
-    Command, Length,
+    Element, Length,
 };
 
 use crate::tabs::tab_label::TabLabel;
@@ -16,9 +16,19 @@ pub struct TabBar {
 
 impl TabBar {
     const SCROLLER_WIDTH: f32 = 3.0;
-    fn add_default_tab(&mut self) {
-        self.tabs.push(TabLabel::new(self.next_id));
+    pub fn add_default_tab(&mut self) {
+        self.tabs
+            .push(TabLabel::new(self.next_id, "New Tab".to_owned()));
         self.next_id += 1;
+    }
+    pub fn add(&mut self, label_name: String) -> usize {
+        self.tabs.push(TabLabel::new(self.next_id, label_name));
+        let result = self.next_id;
+        self.next_id += 1;
+        result
+    }
+    pub fn get_active_id(&self) -> Option<usize> {
+        self.active_tab_id
     }
     fn remove_tab_by_id(&mut self, remove_id: usize, update_active_id: bool) -> Option<usize> {
         let removed_index = match self.get_index_by_id(remove_id) {
@@ -63,7 +73,7 @@ impl TabBar {
 }
 
 impl<'a> TabBar {
-    pub fn update(&mut self, message: ScrollableTabBarMessage) -> Command<ScrollableTabBarMessage> {
+    pub fn update(&mut self, message: ScrollableTabBarMessage) {
         match message {
             ScrollableTabBarMessage::NewTab => {
                 self.add_default_tab();
@@ -86,10 +96,9 @@ impl<'a> TabBar {
                 }
             }
         }
-        Command::none()
     }
 
-    pub fn view(&self) -> Row<'a, ScrollableTabBarMessage> {
+    pub fn view(&self) -> Element<'a, ScrollableTabBarMessage> {
         Row::new()
             .push(button("+").on_press(ScrollableTabBarMessage::NewTab))
             .push(
@@ -106,12 +115,12 @@ impl<'a> TabBar {
                         .scroller_width(Self::SCROLLER_WIDTH),
                 )),
             )
+            .into()
     }
 }
 
 #[cfg(test)]
 mod tests {
-    
     use crate::tabs::tab_bar::TabBar;
 
     #[test]

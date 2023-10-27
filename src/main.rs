@@ -1,21 +1,31 @@
 use iced::{executor, Application, Command, Element, Settings, Theme};
-use tabs::{ScrollableTabBarMessage, Tabs};
+use tabs::*;
 
-mod tabs;
+pub mod tabs;
 
 fn main() -> iced::Result {
     PracticeApp::run(Settings::default())
 }
 
+#[derive(Debug, Copy, Clone)]
+enum MyMessage {
+    Tab(TabMessage<ContentMessage>),
+}
+
+#[derive(Debug, Copy, Clone)]
+enum ContentMessage {
+    _None,
+}
+
 #[derive(Default)]
 struct PracticeApp {
-    tabs: Tabs,
+    tabs: Tabs<ContentMessage>,
 }
 
 impl Application for PracticeApp {
     type Executor = executor::Default;
     type Flags = ();
-    type Message = ScrollableTabBarMessage;
+    type Message = MyMessage;
     type Theme = Theme;
 
     fn new(_flags: ()) -> (PracticeApp, Command<Self::Message>) {
@@ -32,11 +42,14 @@ impl Application for PracticeApp {
     }
 
     fn update(&mut self, message: Self::Message) -> Command<Self::Message> {
-        self.tabs.update(message)
+        match message {
+            MyMessage::Tab(message) => self.tabs.update(message),
+        }
+        Command::none()
     }
 
     fn view(&self) -> Element<Self::Message> {
-        self.tabs.view().into()
+        self.tabs.view().map(MyMessage::Tab)
     }
 
     fn theme(&self) -> Self::Theme {
