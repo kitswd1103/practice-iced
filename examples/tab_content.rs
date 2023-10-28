@@ -2,7 +2,7 @@ use std::cell::Cell;
 
 use iced::{
     executor,
-    widget::{Button, Column, Row},
+    widget::{Button, Column, Row, text},
     Application, Command, Element, Settings, Theme,
 };
 use practice_iced::tabs::*;
@@ -34,9 +34,9 @@ impl Application for PracticeApp {
         tabs.register_add_clojure(Box::new(move || {
             let label = format!("Example {}", num.get());
             let content: Box<dyn TabContent<ExampleMessage>> = if num.get() % 2 == 0 {
-                Box::new(Example::Content1(Example1))
+                Box::new(Example::Content1(Example1 { num: num.get() }))
             } else {
-                Box::new(Example::Content2(Example2))
+                Box::new(Example::Content2(Example2 { num: num.get() }))
             };
 
             num.set(num.get() + 1);
@@ -82,8 +82,12 @@ enum ExampleMessage2 {
     Example2_1,
     Example2_2,
 }
-struct Example1;
-struct Example2;
+struct Example1 {
+    num: usize,
+}
+struct Example2 {
+    num: usize,
+}
 
 enum Example {
     Content1(Example1),
@@ -91,31 +95,35 @@ enum Example {
 }
 impl TabContent<ExampleMessage> for Example {
     fn update(&mut self, message: ExampleMessage) {
+        let num = match self {
+            Example::Content1(c) => c.num,
+            Example::Content2(c) => c.num,
+        };
         match message {
             ExampleMessage::None => {}
             ExampleMessage::Test1(message) => match message {
-                ExampleMessage1::Example1_1 => println!("example1_1"),
-                ExampleMessage1::Example1_2 => println!("example1_2"),
+                ExampleMessage1::Example1_1 => println!("example1_1_{}", num),
+                ExampleMessage1::Example1_2 => println!("example1_2_{}", num),
             },
             ExampleMessage::Test2(message) => match message {
-                ExampleMessage2::Example2_1 => println!("example2_1"),
-                ExampleMessage2::Example2_2 => println!("example2_2"),
+                ExampleMessage2::Example2_1 => println!("example2_1_{}", num),
+                ExampleMessage2::Example2_2 => println!("example2_2_{}", num),
             },
         }
     }
 
     fn view(&self) -> Element<ExampleMessage> {
         match self {
-            Self::Content1(_) => Into::<Element<_>>::into(
+            Self::Content1(content) => Into::<Element<_>>::into(
                 Row::new()
-                    .push(Button::new("Example1_1").on_press(ExampleMessage1::Example1_1))
-                    .push(Button::new("Example1_2").on_press(ExampleMessage1::Example1_2)),
+                    .push(Button::new(text(format!("Example1_1_{}", content.num))).on_press(ExampleMessage1::Example1_1))
+                    .push(Button::new(text(format!("Example1_2_{}", content.num))).on_press(ExampleMessage1::Example1_2)),
             )
             .map(ExampleMessage::Test1),
-            Self::Content2(_) => Into::<Element<_>>::into(
+            Self::Content2(content) => Into::<Element<_>>::into(
                 Column::new()
-                    .push(Button::new("Example2_1").on_press(ExampleMessage2::Example2_1))
-                    .push(Button::new("Example2_2").on_press(ExampleMessage2::Example2_2)),
+                    .push(Button::new(text(format!("Example1_2_{}", content.num))).on_press(ExampleMessage2::Example2_1))
+                    .push(Button::new(text(format!("Example1_2_{}", content.num))).on_press(ExampleMessage2::Example2_2)),
             )
             .map(ExampleMessage::Test2),
         }
