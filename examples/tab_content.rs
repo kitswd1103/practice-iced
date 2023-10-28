@@ -1,3 +1,5 @@
+use std::cell::Cell;
+
 use iced::{
     executor,
     widget::{Button, Column, Row},
@@ -27,8 +29,19 @@ impl Application for PracticeApp {
 
     fn new(_flags: ()) -> (PracticeApp, Command<Self::Message>) {
         let mut tabs = Tabs::default();
-        tabs.add("Example1".to_owned(), Example::Content1(Example1));
-        tabs.add("Example2".to_owned(), Example::Content2(Example2));
+        let num = Cell::new(0);
+
+        tabs.register_add_clojure(Box::new(move || {
+            let label = format!("Example {}", num.get());
+            let content: Box<dyn TabContent<ExampleMessage>> = if num.get() % 2 == 0 {
+                Box::new(Example::Content1(Example1))
+            } else {
+                Box::new(Example::Content2(Example2))
+            };
+
+            num.set(num.get() + 1);
+            (label, content)
+        }));
         (PracticeApp { tabs }, Command::none())
     }
 
