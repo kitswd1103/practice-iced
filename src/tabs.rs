@@ -5,6 +5,8 @@ use crate::tabs::tab_bar::TabBar;
 mod tab_bar;
 mod tab_label;
 
+type ContentBuilder<Message> = Box<dyn Fn() -> (String, Box<dyn TabContent<Message>>)>;
+
 #[derive(Debug, Copy, Clone)]
 pub enum TabMessage<ContentMessage: Clone + Copy> {
     TabBarMessage(ScrollableTabBarMessage),
@@ -21,6 +23,7 @@ pub enum ScrollableTabBarMessage {
 pub struct Tabs<Message: Clone + Copy> {
     tab_bar: TabBar,
     tab_contents: Vec<(usize, Box<dyn TabContent<Message>>)>,
+    add_content_clojure: Option<ContentBuilder<Message>>,
 }
 
 impl<Message: Clone + Copy> Default for Tabs<Message> {
@@ -28,6 +31,7 @@ impl<Message: Clone + Copy> Default for Tabs<Message> {
         Self {
             tab_bar: TabBar::default(),
             tab_contents: Vec::default(),
+            add_content_clojure: None,
         }
     }
 }
@@ -35,7 +39,20 @@ impl<Message: Clone + Copy> Default for Tabs<Message> {
 impl<Message: Clone + Copy> Tabs<Message> {
     pub fn update(&mut self, message: TabMessage<Message>) {
         match message {
-            TabMessage::TabBarMessage(message) => self.tab_bar.update(message),
+            TabMessage::TabBarMessage(message) => {
+                match message {
+                    ScrollableTabBarMessage::NewTab => {
+                        if let Some(clojure) = &self.add_content_clojure {
+                            let new_content = clojure();
+                            self.add_box(new_content.0, new_content.1);
+                        } else {
+                            self.tab_bar.update(message);
+                        }
+                    }
+                    _ => self.tab_bar.update(message),
+                }
+
+            }
             TabMessage::ContentMessage(message) => {
                 if let Some(content) = self.get_active_mut_content() {
                     content.update(message);
@@ -59,9 +76,17 @@ impl<Message: Clone + Copy> Tabs<Message> {
 
         ret.into()
     }
+    pub fn register_add_clojure(&mut self, clojure: ContentBuilder<Message>) {
+        self.add_content_clojure = Some(clojure);
+    }
+
     pub fn add(&mut self, label_name: String, content: impl TabContent<Message> + 'static) {
         self.tab_contents
             .push((self.tab_bar.add(label_name), Box::new(content)));
+    }
+    pub fn add_box(&mut self, label_name: String, content: Box<dyn TabContent<Message> + 'static>) {
+        self.tab_contents
+            .push((self.tab_bar.add(label_name), content));
     }
     pub fn get_active_content(&self) -> Option<&dyn TabContent<Message>> {
         if let Some(active_id) = self.get_active_id() {
