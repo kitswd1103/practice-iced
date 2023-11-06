@@ -1,4 +1,4 @@
-use iced::{executor, Application, Command, Element, Settings, Theme};
+use iced::{executor, Application, Command, Element, Settings, Theme, event, Event, mouse};
 use tabs::*;
 
 pub mod tabs;
@@ -7,9 +7,10 @@ fn main() -> iced::Result {
     PracticeApp::run(Settings::default())
 }
 
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Clone)]
 enum MyMessage {
     Tab(TabMessage<ContentMessage>),
+    EventMessage(Event),
 }
 
 #[derive(Debug, Copy, Clone)]
@@ -44,6 +45,19 @@ impl Application for PracticeApp {
     fn update(&mut self, message: Self::Message) -> Command<Self::Message> {
         match message {
             MyMessage::Tab(message) => self.tabs.update(message),
+            MyMessage::EventMessage(Event::Mouse(event))=> {
+                match event {
+                    mouse::Event::WheelScrolled { delta } => {
+                        let delta = match delta {
+                            mouse::ScrollDelta::Lines { x, y } => { (x, y) },
+                            mouse::ScrollDelta::Pixels { x, y } => { (x, y) }
+                        };
+                        println!("{:?}", delta);
+                    }
+                    _ => {}
+                }
+            },
+            _ => {}
         }
         Command::none()
     }
@@ -54,5 +68,8 @@ impl Application for PracticeApp {
 
     fn theme(&self) -> Self::Theme {
         Theme::Dark
+    }
+    fn subscription(&self) -> iced::Subscription<Self::Message> {
+        event::listen().map(MyMessage::EventMessage)
     }
 }
